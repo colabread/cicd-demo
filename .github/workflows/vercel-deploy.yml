@@ -1,0 +1,115 @@
+name: Vercel Deploy
+
+on:
+  push:
+    branches:
+      - test
+  pull_request:
+    branches:
+      - pre
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: vercel-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref_name || github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: ${{ github.event_name == 'push' && 'Test' || github.event_name == 'pull_request' && 'Pre' || 'Prod' }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'push' && 'test' || github.event_name == 'pull_request' && 'pre' || 'prod' }}
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+    steps:
+      - name: Validate prod branch
+        if: github.event_name == 'workflow_dispatch' && github.ref_name != 'master'
+        run: |
+          echo "Prod deployments must be dispatched from the master branch."
+          exit 1
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
+      # Test deployment is intentionally disabled until Vercel secrets are configured.
+      # To enable deployment to test-dingnan.vercel.app later, uncomment this block.
+      #
+      # - name: Pull Vercel environment (test)
+      #   if: github.event_name == 'push' && github.ref_name == 'test'
+      #   run: npx vercel@latest pull --yes --environment=preview --token="$VERCEL_TOKEN"
+      #
+      # - name: Build with Vercel (test)
+      #   if: github.event_name == 'push' && github.ref_name == 'test'
+      #   run: npx vercel@latest build --token="$VERCEL_TOKEN"
+      #
+      # - name: Deploy to Vercel (test)
+      #   if: github.event_name == 'push' && github.ref_name == 'test'
+      #   id: deploy-test
+      #   run: |
+      #     url=$(npx vercel@latest deploy --prebuilt --token="$VERCEL_TOKEN")
+      #     echo "url=$url" >> "$GITHUB_OUTPUT"
+      #
+      # - name: Alias test deployment
+      #   if: github.event_name == 'push' && github.ref_name == 'test'
+      #   run: npx vercel@latest alias set "${{ steps.deploy-test.outputs.url }}" test-dingnan.vercel.app --token="$VERCEL_TOKEN"
+
+      - name: Pull Vercel environment
+        if: github.event_name != 'push'
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            npx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
+          else
+            npx vercel@latest pull --yes --environment=preview --token="$VERCEL_TOKEN"
+          fi
+
+      - name: Build with Vercel
+        if: github.event_name != 'push'
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            npx vercel@latest build --prod --token="$VERCEL_TOKEN"
+          else
+            npx vercel@latest build --token="$VERCEL_TOKEN"
+          fi
+
+      - name: Deploy to Vercel
+        if: github.event_name != 'push'
+        id: deploy
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            url=$(npx vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN")
+          else
+            url=$(npx vercel@latest deploy --prebuilt --token="$VERCEL_TOKEN")
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Alias deployment
+        if: github.event_name != 'push'
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            domain="dingnan.vercel.app"
+          else
+            domain="pre-dingnan.vercel.app"
+          fi
+          npx vercel@latest alias set "${{ steps.deploy.outputs.url }}" "$domain" --token="$VERCEL_TOKEN"
