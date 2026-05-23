@@ -56,6 +56,64 @@
   }
 }
 
+.profile {
+  width: min(100%, 360px);
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--social-bg);
+  text-align: left;
+
+  h2 {
+    margin: 0 0 14px;
+    font-size: 18px;
+  }
+
+  dl {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+  }
+
+  div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  dt {
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--text-h);
+    font-weight: 600;
+  }
+
+  @media (max-width: 480px) {
+    box-sizing: border-box;
+  }
+}
+
+.version-badge {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-h);
+  background: var(--accent-bg);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: var(--shadow);
+}
+
 #center {
   display: flex;
   flex-direction: column;
