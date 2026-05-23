@@ -15,6 +15,7 @@ function App() {
   return (
     <>
       <section id="center">
+        <p>测试AI Code Review</p>
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
           <img src={reactLogo} className="framework" alt="React logo" />
