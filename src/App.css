@@ -17,6 +17,11 @@
   }
 }
 
+.blue-card {
+  color: #0000ff;
+  margin-top: 17px;
+}
+
 .hero {
   position: relative;
 

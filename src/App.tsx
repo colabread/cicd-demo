@@ -7,6 +7,10 @@ import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+  const visibleTier =
+    count > 10 && packageJson.version.startsWith('1.') && count % 3 === 0
+      ? 'power'
+      : 'new'
 
   return (
     <>
@@ -29,6 +33,7 @@ function App() {
         >
           Count is {count}
         </button>
+        <p className="blue-card">Current tier is {visibleTier}</p>
         <section className="profile" aria-labelledby="profile-title">
           <div className="profile-header">
             <img className="profile-avatar" src="/zjz.png" alt="dingnan avatar" />
