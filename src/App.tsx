@@ -5,12 +5,24 @@ import heroImg from './assets/hero.png'
 import packageJson from '../package.json'
 import './App.css'
 
+const POWER_TIER_MIN_COUNT = 10
+const POWER_TIER_INTERVAL = 3
+const POWER_TIER_VERSION_PREFIX = '1.'
+
 function App() {
   const [count, setCount] = useState(0)
+  const isPowerTierVersion = packageJson.version.startsWith(
+    POWER_TIER_VERSION_PREFIX,
+  )
+  const hasPowerTierCount =
+    count > POWER_TIER_MIN_COUNT && count % POWER_TIER_INTERVAL === 0
+  const visibleTier =
+    isPowerTierVersion && hasPowerTierCount ? 'power' : 'new'
 
   return (
     <>
       <section id="center">
+        <p>测试AI Code Review</p>
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
           <img src={reactLogo} className="framework" alt="React logo" />
@@ -29,6 +41,7 @@ function App() {
         >
           Count is {count}
         </button>
+        <p className="tier-status">Current tier is {visibleTier}</p>
         <section className="profile" aria-labelledby="profile-title">
           <div className="profile-header">
             <img className="profile-avatar" src="/zjz.png" alt="dingnan avatar" />
