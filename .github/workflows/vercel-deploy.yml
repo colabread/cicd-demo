@@ -7,6 +7,9 @@ on:
   pull_request:
     branches:
       - pre
+  release:
+    types:
+      - published
   workflow_dispatch:
 
 permissions:
@@ -34,8 +37,16 @@ jobs:
           echo "Prod deployments must be dispatched from the master branch."
           exit 1
 
+      - name: Validate release target
+        if: github.event_name == 'release' && github.event.release.target_commitish != 'master'
+        run: |
+          echo "Prod release deployments must target the master branch."
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.target_commitish || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -75,7 +86,7 @@ jobs:
       - name: Pull Vercel environment
         if: github.event_name != 'push'
         run: |
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_EVENT_NAME" = "release" ]; then
             npx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
           else
             npx vercel@latest pull --yes --environment=preview --token="$VERCEL_TOKEN"
@@ -84,7 +95,7 @@ jobs:
       - name: Build with Vercel
         if: github.event_name != 'push'
         run: |
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_EVENT_NAME" = "release" ]; then
             npx vercel@latest build --prod --token="$VERCEL_TOKEN"
           else
             npx vercel@latest build --token="$VERCEL_TOKEN"
@@ -94,7 +105,7 @@ jobs:
         if: github.event_name != 'push'
         id: deploy
         run: |
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_EVENT_NAME" = "release" ]; then
             url=$(npx vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN")
           else
             url=$(npx vercel@latest deploy --prebuilt --token="$VERCEL_TOKEN")
@@ -104,7 +115,7 @@ jobs:
       - name: Alias deployment
         if: github.event_name != 'push'
         run: |
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_EVENT_NAME" = "release" ]; then
             domain="dingnan.vercel.app"
           else
             domain="pre-dingnan.vercel.app"
