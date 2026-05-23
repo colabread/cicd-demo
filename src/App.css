@@ -64,8 +64,25 @@
   background: var(--social-bg);
   text-align: left;
 
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .profile-avatar {
+    width: 56px;
+    height: 56px;
+    flex: 0 0 auto;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--accent-bg);
+  }
+
   h2 {
-    margin: 0 0 14px;
+    margin: 0;
     font-size: 18px;
   }
 
@@ -75,7 +92,7 @@
     margin: 0;
   }
 
-  div {
+  dl > div {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
