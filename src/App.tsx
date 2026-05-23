@@ -28,6 +28,19 @@ function App() {
         >
           Count is {count}
         </button>
+        <section className="profile" aria-labelledby="profile-title">
+          <h2 id="profile-title">Profile</h2>
+          <dl>
+            <div>
+              <dt>Name</dt>
+              <dd>dingnan</dd>
+            </div>
+            <div>
+              <dt>Job</dt>
+              <dd>fe-engineer</dd>
+            </div>
+          </dl>
+        </section>
       </section>
 
       <div className="ticks"></div>
