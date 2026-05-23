@@ -1,7 +1,7 @@
 {
   "name": "cicd-demo",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -43,5 +43,9 @@
     "cz-customizable": {
       "config": "cz-config.cjs"
     }
+  },
+  "engines": {
+    "node": "20.19.3",
+    "yarn": "1.22.22"
   }
 }
