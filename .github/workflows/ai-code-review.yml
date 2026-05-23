@@ -42,6 +42,7 @@ jobs:
           AI_REVIEW_MODEL: ${{ vars.AI_REVIEW_MODEL || secrets.AI_REVIEW_MODEL }}
 
       - name: Upload AI review report
+        id: upload-ai-review-report
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -49,3 +50,10 @@ jobs:
           path: reports/ai-code-review-report.json
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Update AI review report link
+        if: always() && steps.upload-ai-review-report.outputs.artifact-url != ''
+        run: node scripts/ai-review-changed-files.cjs --update-report-url
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AI_REVIEW_REPORT_URL: ${{ steps.upload-ai-review-report.outputs.artifact-url }}
