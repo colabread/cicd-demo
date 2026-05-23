@@ -31,7 +31,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 20.19.3
 
       - name: Review changed frontend files
         run: node scripts/ai-review-changed-files.cjs
