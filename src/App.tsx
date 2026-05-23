@@ -7,13 +7,17 @@ import './App.css'
 
 const POWER_TIER_MIN_COUNT = 10
 const POWER_TIER_INTERVAL = 3
+const POWER_TIER_VERSION_PREFIX = '1.'
 
 function App() {
   const [count, setCount] = useState(0)
-  const isVersionOne = packageJson.version.startsWith('1.')
+  const isPowerTierVersion = packageJson.version.startsWith(
+    POWER_TIER_VERSION_PREFIX,
+  )
   const hasPowerTierCount =
     count > POWER_TIER_MIN_COUNT && count % POWER_TIER_INTERVAL === 0
-  const visibleTier = isVersionOne && hasPowerTierCount ? 'power' : 'new'
+  const visibleTier =
+    isPowerTierVersion && hasPowerTierCount ? 'power' : 'new'
 
   return (
     <>
