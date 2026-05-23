@@ -40,3 +40,12 @@ jobs:
           AI_REVIEW_API_KEY: ${{ secrets.AI_REVIEW_API_KEY }}
           AI_REVIEW_BASE_URL: ${{ vars.AI_REVIEW_BASE_URL || secrets.AI_REVIEW_BASE_URL }}
           AI_REVIEW_MODEL: ${{ vars.AI_REVIEW_MODEL || secrets.AI_REVIEW_MODEL }}
+
+      - name: Upload AI review report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-code-review-report
+          path: reports/ai-code-review-report.json
+          if-no-files-found: warn
+          retention-days: 14
