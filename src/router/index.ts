@@ -6,16 +6,9 @@ import EditOutlined from '@ant-design/icons/EditOutlined'
 import FileTextOutlined from '@ant-design/icons/FileTextOutlined'
 import SafetyCertificateOutlined from '@ant-design/icons/SafetyCertificateOutlined'
 import TeamOutlined from '@ant-design/icons/TeamOutlined'
-import type { ComponentType } from 'react'
+import { lazy } from 'react'
+import type { ComponentType, LazyExoticComponent } from 'react'
 import type { ModulePageMeta } from '../views/module-placeholder'
-import KnowledgeGraph from '../views/knowledge-graph'
-import LogManagement from '../views/log-management'
-import PaperComposition from '../views/paper-composition'
-import PaperManagement from '../views/paper-management'
-import PermissionManagement from '../views/permission-management'
-import QuestionBank from '../views/question-bank'
-import QuestionLabeling from '../views/question-labeling'
-import UserManagement from '../views/user-management'
 import {
   knowledgeGraphMeta,
   logManagementMeta,
@@ -27,11 +20,20 @@ import {
   userManagementMeta,
 } from '../views/meta'
 
+const QuestionBank = lazy(() => import('../views/question-bank'))
+const PaperManagement = lazy(() => import('../views/paper-management'))
+const KnowledgeGraph = lazy(() => import('../views/knowledge-graph'))
+const UserManagement = lazy(() => import('../views/user-management'))
+const PermissionManagement = lazy(() => import('../views/permission-management'))
+const PaperComposition = lazy(() => import('../views/paper-composition'))
+const QuestionLabeling = lazy(() => import('../views/question-labeling'))
+const LogManagement = lazy(() => import('../views/log-management'))
+
 export type ResearchRoute = {
   path: string
   meta: ModulePageMeta
   icon: ComponentType
-  component: ComponentType
+  component: LazyExoticComponent<ComponentType>
 }
 
 export const DEFAULT_ROUTE = '/question-bank'

@@ -90,6 +90,30 @@
   padding: 30px;
 }
 
+.route-fallback {
+  display: grid;
+  gap: 18px;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 26px;
+  border: 1px solid rgba(35, 34, 31, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 42px rgba(31, 39, 31, 0.07);
+}
+
+.route-fallback-header {
+  display: grid;
+  gap: 12px;
+  max-width: 460px;
+}
+
+.route-fallback-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
 .page-shell {
   display: grid;
   gap: 22px;
@@ -252,6 +276,7 @@
   }
 
   .metric-grid,
+  .route-fallback-grid,
   .workbench-grid {
     grid-template-columns: 1fr;
   }

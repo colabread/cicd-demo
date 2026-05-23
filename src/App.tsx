@@ -5,11 +5,12 @@ import {
   Flex,
   Layout,
   Menu,
+  Skeleton,
   Tag,
   Typography,
 } from 'antd'
 import type { MenuProps } from 'antd'
-import { createElement } from 'react'
+import { Suspense, createElement } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import {
   DEFAULT_ROUTE,
@@ -31,6 +32,23 @@ const MENU_ITEMS: MenuProps['items'] = researchRoutes.map((route) => {
     label: route.meta.title,
   }
 })
+
+function RouteFallback() {
+  return (
+    <div className="route-fallback" role="status" aria-label="页面加载中">
+      <div className="route-fallback-header">
+        <Skeleton.Button active block size="small" />
+        <Skeleton.Button active block />
+      </div>
+      <div className="route-fallback-grid">
+        <Skeleton active paragraph={{ rows: 2 }} title />
+        <Skeleton active paragraph={{ rows: 2 }} title />
+        <Skeleton active paragraph={{ rows: 2 }} title />
+      </div>
+      <Skeleton active paragraph={{ rows: 6 }} title />
+    </div>
+  )
+}
 
 function ResearchLayout() {
   const navigate = useNavigate()
@@ -79,17 +97,19 @@ function ResearchLayout() {
         </Header>
 
         <Content className="workspace-content">
-          <Routes>
-            <Route path="/" element={<Navigate to={DEFAULT_ROUTE} replace />} />
-            {researchRoutes.map((route) => (
-              <Route
-                element={createElement(route.component)}
-                key={route.path}
-                path={route.path.slice(1)}
-              />
-            ))}
-            <Route path="*" element={<Navigate to={DEFAULT_ROUTE} replace />} />
-          </Routes>
+          <Suspense fallback={<RouteFallback />}>
+            <Routes>
+              <Route path="/" element={<Navigate to={DEFAULT_ROUTE} replace />} />
+              {researchRoutes.map((route) => (
+                <Route
+                  element={createElement(route.component)}
+                  key={route.path}
+                  path={route.path.slice(1)}
+                />
+              ))}
+              <Route path="*" element={<Navigate to={DEFAULT_ROUTE} replace />} />
+            </Routes>
+          </Suspense>
         </Content>
       </Layout>
     </Layout>
