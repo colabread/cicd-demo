@@ -17,6 +17,10 @@
   }
 }
 
+.tier-status {
+  color: var(--accent);
+}
+
 .hero {
   position: relative;
 
