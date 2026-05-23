@@ -3,8 +3,6 @@ import Button from 'antd/es/button'
 import ConfigProvider from 'antd/es/config-provider'
 import Flex from 'antd/es/flex'
 import Layout from 'antd/es/layout'
-import Menu from 'antd/es/menu'
-import type { MenuProps } from 'antd/es/menu'
 import Skeleton from 'antd/es/skeleton'
 import Tag from 'antd/es/tag'
 import Typography from 'antd/es/typography'
@@ -21,13 +19,13 @@ import './App.css'
 const { Header, Sider, Content } = Layout
 const { Text, Title } = Typography
 
-const MENU_ITEMS: MenuProps['items'] = researchRoutes.map((route) => {
+const NAV_ITEMS = researchRoutes.map((route) => {
   const Icon = route.icon
 
   return {
-    key: route.path,
-    icon: <Icon />,
+    Icon,
     label: route.meta.title,
+    path: route.path,
   }
 })
 
@@ -54,8 +52,8 @@ function ResearchLayout() {
   const selectedPath = getSelectedPath(location.pathname)
   const selectedRoute = routeByPath.get(selectedPath)
 
-  const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
-    navigate(key)
+  const handleNavClick = (path: string) => {
+    navigate(path)
   }
 
   return (
@@ -68,13 +66,20 @@ function ResearchLayout() {
             <Title level={2}>校本教研平台</Title>
           </div>
         </div>
-        <Menu
-          className="nav-menu"
-          items={MENU_ITEMS}
-          mode="inline"
-          onClick={handleMenuClick}
-          selectedKeys={[selectedPath]}
-        />
+        <nav className="nav-menu" aria-label="教研模块导航">
+          {NAV_ITEMS.map(({ Icon, label, path }) => (
+            <button
+              aria-current={selectedPath === path ? 'page' : undefined}
+              className={`nav-item${selectedPath === path ? ' is-active' : ''}`}
+              key={path}
+              onClick={() => handleNavClick(path)}
+              type="button"
+            >
+              <Icon />
+              <span>{label}</span>
+            </button>
+          ))}
+        </nav>
       </Sider>
 
       <Layout className="workspace-layout">
@@ -134,15 +139,6 @@ function App() {
             bodyBg: '#f7f5ee',
             headerBg: 'rgba(247, 245, 238, 0.88)',
             siderBg: '#143c35',
-          },
-          Menu: {
-            itemBg: 'transparent',
-            itemBorderRadius: 6,
-            itemColor: 'rgba(255, 255, 255, 0.76)',
-            itemHoverBg: 'rgba(255, 255, 255, 0.09)',
-            itemHoverColor: '#ffffff',
-            itemSelectedBg: '#f0c86a',
-            itemSelectedColor: '#1f271f',
           },
         },
       }}

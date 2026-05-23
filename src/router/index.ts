@@ -1,13 +1,13 @@
-import AuditOutlined from '@ant-design/icons/AuditOutlined'
-import BookOutlined from '@ant-design/icons/BookOutlined'
-import ClusterOutlined from '@ant-design/icons/ClusterOutlined'
-import DatabaseOutlined from '@ant-design/icons/DatabaseOutlined'
-import EditOutlined from '@ant-design/icons/EditOutlined'
-import FileTextOutlined from '@ant-design/icons/FileTextOutlined'
-import SafetyCertificateOutlined from '@ant-design/icons/SafetyCertificateOutlined'
-import TeamOutlined from '@ant-design/icons/TeamOutlined'
 import { lazy } from 'react'
 import type { ComponentType, LazyExoticComponent } from 'react'
+import AuditIcon from '../assets/icons/audit.svg?react'
+import BookIcon from '../assets/icons/book.svg?react'
+import DatabaseIcon from '../assets/icons/database.svg?react'
+import EditIcon from '../assets/icons/edit.svg?react'
+import FileTextIcon from '../assets/icons/file-text.svg?react'
+import GraphIcon from '../assets/icons/graph.svg?react'
+import ShieldIcon from '../assets/icons/shield.svg?react'
+import UsersIcon from '../assets/icons/users.svg?react'
 import type { ModulePageMeta } from '../views/module-placeholder'
 import {
   knowledgeGraphMeta,
@@ -42,49 +42,49 @@ export const researchRoutes = [
   {
     path: '/question-bank',
     meta: questionBankMeta,
-    icon: DatabaseOutlined,
+    icon: DatabaseIcon,
     component: QuestionBank,
   },
   {
     path: '/papers',
     meta: paperManagementMeta,
-    icon: FileTextOutlined,
+    icon: FileTextIcon,
     component: PaperManagement,
   },
   {
     path: '/knowledge-graph',
     meta: knowledgeGraphMeta,
-    icon: ClusterOutlined,
+    icon: GraphIcon,
     component: KnowledgeGraph,
   },
   {
     path: '/users',
     meta: userManagementMeta,
-    icon: TeamOutlined,
+    icon: UsersIcon,
     component: UserManagement,
   },
   {
     path: '/permissions',
     meta: permissionManagementMeta,
-    icon: SafetyCertificateOutlined,
+    icon: ShieldIcon,
     component: PermissionManagement,
   },
   {
     path: '/paper-composition',
     meta: paperCompositionMeta,
-    icon: BookOutlined,
+    icon: BookIcon,
     component: PaperComposition,
   },
   {
     path: '/question-labeling',
     meta: questionLabelingMeta,
-    icon: EditOutlined,
+    icon: EditIcon,
     component: QuestionLabeling,
   },
   {
     path: '/logs',
     meta: logManagementMeta,
-    icon: AuditOutlined,
+    icon: AuditIcon,
     component: LogManagement,
   },
 ] as const satisfies readonly ResearchRoute[]
