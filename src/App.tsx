@@ -2,6 +2,7 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
+import packageJson from '../package.json'
 import './App.css'
 
 function App() {
@@ -28,6 +29,19 @@ function App() {
         >
           Count is {count}
         </button>
+        <section className="profile" aria-labelledby="profile-title">
+          <h2 id="profile-title">Profile</h2>
+          <dl>
+            <div>
+              <dt>Name</dt>
+              <dd>dingnan</dd>
+            </div>
+            <div>
+              <dt>Job</dt>
+              <dd>fe-engineer</dd>
+            </div>
+          </dl>
+        </section>
       </section>
 
       <div className="ticks"></div>
@@ -115,6 +129,9 @@ function App() {
 
       <div className="ticks"></div>
       <section id="spacer"></section>
+      <aside className="version-badge" aria-label={`Version ${packageJson.version}`}>
+        v{packageJson.version}
+      </aside>
     </>
   )
 }
