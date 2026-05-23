@@ -30,7 +30,10 @@ function App() {
           Count is {count}
         </button>
         <section className="profile" aria-labelledby="profile-title">
-          <h2 id="profile-title">Profile</h2>
+          <div className="profile-header">
+            <img className="profile-avatar" src="/zjz.png" alt="dingnan avatar" />
+            <h2 id="profile-title">Profile</h2>
+          </div>
           <dl>
             <div>
               <dt>Name</dt>
