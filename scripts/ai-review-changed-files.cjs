@@ -17,6 +17,9 @@ const REVIEW_MARKER = '<!-- ai-code-review:frontend-guidelines -->'
 const SUMMARY_MARKER = '<!-- ai-code-review:frontend-guidelines-summary -->'
 const MAX_FINDINGS = 20
 const MAX_PATCH_CHARS = 80000
+const GUIDELINES_PATH = 'docs/frontend-code-review-guidelines.md'
+const REPORT_DIR = 'reports'
+const REPORT_JSON_PATH = path.join(REPORT_DIR, 'ai-code-review-report.json')
 
 function log(message) {
   console.log(`[ai-review] ${message}`)
@@ -28,6 +31,18 @@ function readJson(filePath) {
 
 function isFrontendFile(filePath) {
   return FRONTEND_EXTENSIONS.has(path.extname(filePath).toLowerCase())
+}
+
+function workflowRunUrl() {
+  const serverUrl = process.env.GITHUB_SERVER_URL
+  const repository = process.env.GITHUB_REPOSITORY
+  const runId = process.env.GITHUB_RUN_ID
+
+  if (!serverUrl || !repository || !runId) {
+    return ''
+  }
+
+  return `${serverUrl}/${repository}/actions/runs/${runId}`
 }
 
 function chatCompletionsUrl(baseUrl) {
@@ -260,6 +275,61 @@ function findingKey(finding) {
   return `${finding.path}:${finding.line}:${finding.ruleId}`
 }
 
+function createReport({
+  status,
+  pullRequest,
+  reviewedFiles = [],
+  findings = [],
+  unresolvedFindings = [],
+  postedCount = 0,
+  skippedReason = '',
+  error = '',
+}) {
+  return {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    status,
+    guidelinePath: GUIDELINES_PATH,
+    agentInstruction:
+      `Read ${GUIDELINES_PATH}, then fix only the issues listed in this report and directly related code. Do not perform unrelated refactors. After editing, run yarn lint first and run yarn build when the changes can affect types or build output.`,
+    workflowRunUrl: workflowRunUrl(),
+    pullRequest: pullRequest
+      ? {
+          number: pullRequest.number,
+          title: pullRequest.title,
+          url: pullRequest.html_url,
+          base: pullRequest.base?.ref,
+          head: pullRequest.head?.ref,
+          headSha: pullRequest.head?.sha,
+        }
+      : null,
+    summary: {
+      reviewedFileCount: reviewedFiles.length,
+      findingCount: findings.length,
+      unresolvedFindingCount: unresolvedFindings.length,
+      postedLineCommentCount: postedCount,
+      skippedReason,
+      error,
+    },
+    reviewedFiles: reviewedFiles.map((file) => ({
+      path: file.filename,
+      status: file.status,
+      changedLines: Array.from(file.changedLines ?? []).sort((a, b) => a - b),
+    })),
+    findings,
+    unresolvedFindings,
+  }
+}
+
+function writeReport(report) {
+  fs.mkdirSync(path.join(process.cwd(), REPORT_DIR), { recursive: true })
+  fs.writeFileSync(
+    path.join(process.cwd(), REPORT_JSON_PATH),
+    `${JSON.stringify(report, null, 2)}\n`,
+  )
+  log(`Wrote report file to ${REPORT_JSON_PATH}.`)
+}
+
 function normalizeFindings(findings, filesByPath) {
   const seen = new Set()
   const normalized = []
@@ -296,7 +366,7 @@ function reviewCommentBody(finding) {
   ].join('\n')
 }
 
-function summaryBody({ files, postedCount, overflow, skippedReason }) {
+function summaryBody({ files, postedCount, overflow, skippedReason, reportUrl }) {
   const lines = [
     SUMMARY_MARKER,
     '## AI Code Review',
@@ -305,11 +375,18 @@ function summaryBody({ files, postedCount, overflow, skippedReason }) {
 
   if (skippedReason) {
     lines.push(`已跳过：${skippedReason}`)
+    if (reportUrl) {
+      lines.push('')
+      lines.push(`报告下载：${reportUrl}`)
+    }
     return lines.join('\n')
   }
 
   lines.push(`已根据 \`docs/frontend-code-review-guidelines.md\` 检查 ${files.length} 个前端变更文件。`)
   lines.push(`已发布 ${postedCount} 条行级评论。`)
+  if (reportUrl) {
+    lines.push(`报告下载：${reportUrl}`)
+  }
 
   if (postedCount === 0 && overflow.length === 0) {
     lines.push('')
@@ -364,6 +441,63 @@ async function upsertSummaryComment({ github, pullNumber, body }) {
   await github.post(`/issues/${pullNumber}/comments`, { body })
 }
 
+async function updateSummaryReportUrl({ github, pullNumber, reportUrl }) {
+  const comments = await paginate((page) => {
+    return github.get(`/issues/${pullNumber}/comments?per_page=100&page=${page}`)
+  })
+
+  const previous = comments.find((comment) => {
+    return typeof comment.body === 'string' && comment.body.includes(SUMMARY_MARKER)
+  })
+
+  if (!previous) {
+    log('No AI review summary comment found. Skipping report URL update.')
+    return
+  }
+
+  const body = previous.body.includes('报告下载：')
+    ? previous.body.replace(/报告下载：.+/u, `报告下载：${reportUrl}`)
+    : `${previous.body}\n报告下载：${reportUrl}`
+
+  await github.patch(`/issues/comments/${previous.id}`, { body })
+  log('Updated AI review summary comment with artifact report URL.')
+}
+
+async function updateReportUrlMode() {
+  const eventPath = process.env.GITHUB_EVENT_PATH
+  const repository = process.env.GITHUB_REPOSITORY
+  const githubToken = process.env.GITHUB_TOKEN
+  const apiUrl = process.env.GITHUB_API_URL || 'https://api.github.com'
+  const reportUrl = process.env.AI_REVIEW_REPORT_URL
+
+  if (!eventPath || !repository || !githubToken || !reportUrl) {
+    log('Missing environment for report URL update. Nothing to update.')
+    return
+  }
+
+  const event = readJson(eventPath)
+  const pullRequest = event.pull_request
+
+  if (!pullRequest) {
+    log('This event is not a pull_request event. Nothing to update.')
+    return
+  }
+
+  const [owner, repo] = repository.split('/')
+  const github = createGitHubClient({
+    apiUrl,
+    owner,
+    repo,
+    token: githubToken,
+  })
+
+  await updateSummaryReportUrl({
+    github,
+    pullNumber: pullRequest.number,
+    reportUrl,
+  })
+}
+
 async function postLineComments({ github, pullNumber, commitSha, findings }) {
   const failed = []
   let postedCount = 0
@@ -401,34 +535,36 @@ async function main() {
     return
   }
 
-  const missingAiConfig = [
-    ['AI_REVIEW_API_KEY', apiKey],
-    ['AI_REVIEW_BASE_URL', baseUrl],
-    ['AI_REVIEW_MODEL', model],
-  ]
-    .filter(([, value]) => !value)
-    .map(([name]) => name)
-
-  if (missingAiConfig.length > 0) {
-    log(`Missing ${missingAiConfig.join(', ')}. Skipping AI review.`)
-    return
-  }
-
   const event = readJson(eventPath)
   const pullRequest = event.pull_request
 
   if (!pullRequest) {
     log('This event is not a pull_request event. Nothing to review.')
+    writeReport(createReport({
+      status: 'skipped',
+      pullRequest: null,
+      skippedReason: 'This event is not a pull_request event.',
+    }))
     return
   }
 
   if (pullRequest.base.ref !== 'pre') {
     log(`Target branch is ${pullRequest.base.ref}, not pre. Skipping AI review.`)
+    writeReport(createReport({
+      status: 'skipped',
+      pullRequest,
+      skippedReason: `Target branch is ${pullRequest.base.ref}, not pre.`,
+    }))
     return
   }
 
   if (pullRequest.draft) {
     log('Pull request is draft. Skipping AI review.')
+    writeReport(createReport({
+      status: 'skipped',
+      pullRequest,
+      skippedReason: 'Pull request is draft.',
+    }))
     return
   }
 
@@ -440,8 +576,43 @@ async function main() {
     token: githubToken,
   })
 
+  const missingAiConfig = [
+    ['AI_REVIEW_API_KEY', apiKey],
+    ['AI_REVIEW_BASE_URL', baseUrl],
+    ['AI_REVIEW_MODEL', model],
+  ]
+    .filter(([, value]) => !value)
+    .map(([name]) => name)
+
+  if (missingAiConfig.length > 0) {
+    const skippedReason = `Missing ${missingAiConfig.join(', ')}.`
+    log(`${skippedReason} Skipping AI review.`)
+    await deletePreviousReviewComments({
+      github,
+      pullNumber: pullRequest.number,
+    })
+    const report = createReport({
+      status: 'skipped',
+      pullRequest,
+      skippedReason,
+    })
+    writeReport(report)
+    await upsertSummaryComment({
+      github,
+      pullNumber: pullRequest.number,
+      body: summaryBody({
+        files: [],
+        postedCount: 0,
+        overflow: [],
+        skippedReason,
+        reportUrl: report.workflowRunUrl,
+      }),
+    })
+    return
+  }
+
   const guidelines = fs.readFileSync(
-    path.join(process.cwd(), 'docs/frontend-code-review-guidelines.md'),
+    path.join(process.cwd(), GUIDELINES_PATH),
     'utf8',
   )
 
@@ -471,6 +642,13 @@ async function main() {
       github,
       pullNumber: pullRequest.number,
     })
+    const skippedReason = '本次 PR 没有需要 AI Review 的前端变更文件。'
+    const report = createReport({
+      status: 'skipped',
+      pullRequest,
+      skippedReason,
+    })
+    writeReport(report)
     await upsertSummaryComment({
       github,
       pullNumber: pullRequest.number,
@@ -478,7 +656,8 @@ async function main() {
         files,
         postedCount: 0,
         overflow: [],
-        skippedReason: '本次 PR 没有需要 AI Review 的前端变更文件。',
+        skippedReason,
+        reportUrl: report.workflowRunUrl,
       }),
     })
     return
@@ -499,6 +678,14 @@ async function main() {
       github,
       pullNumber: pullRequest.number,
     })
+    const skippedReason = '本次前端 diff 过大，超过 AI Review 初版处理上限。'
+    const report = createReport({
+      status: 'skipped',
+      pullRequest,
+      reviewedFiles: files,
+      skippedReason,
+    })
+    writeReport(report)
     await upsertSummaryComment({
       github,
       pullNumber: pullRequest.number,
@@ -506,7 +693,8 @@ async function main() {
         files,
         postedCount: 0,
         overflow: [],
-        skippedReason: '本次前端 diff 过大，超过 AI Review 初版处理上限。',
+        skippedReason,
+        reportUrl: report.workflowRunUrl,
       }),
     })
     return
@@ -541,21 +729,46 @@ async function main() {
     findings: normalized,
   })
 
+  const unresolvedFindings = [...overflow, ...failed]
+  const report = createReport({
+    status: 'completed',
+    pullRequest,
+    reviewedFiles: reviewFiles,
+    findings: normalized,
+    unresolvedFindings,
+    postedCount,
+  })
+  writeReport(report)
+
   await upsertSummaryComment({
     github,
     pullNumber: pullRequest.number,
     body: summaryBody({
       files: reviewFiles,
       postedCount,
-      overflow: [...overflow, ...failed],
+      overflow: unresolvedFindings,
+      reportUrl: report.workflowRunUrl,
     }),
   })
 
   log(`AI review completed with ${postedCount} line comment(s).`)
 }
 
-main().catch((error) => {
+const entrypoint = process.argv.includes('--update-report-url') ? updateReportUrlMode : main
+
+entrypoint().catch((error) => {
   console.error(`[ai-review] ${error.stack || error.message}`)
+  try {
+    const eventPath = process.env.GITHUB_EVENT_PATH
+    const event = eventPath && fs.existsSync(eventPath) ? readJson(eventPath) : {}
+    writeReport(createReport({
+      status: 'failed',
+      pullRequest: event.pull_request ?? null,
+      error: error.message,
+    }))
+  } catch (reportError) {
+    console.error(`[ai-review] Failed to write failure report: ${reportError.message}`)
+  }
   console.error('[ai-review] AI review is non-blocking, exiting successfully.')
   process.exit(0)
 })

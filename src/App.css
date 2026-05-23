@@ -17,9 +17,8 @@
   }
 }
 
-.blue-card {
-  color: #0000ff;
-  margin-top: 17px;
+.tier-status {
+  color: var(--accent);
 }
 
 .hero {
