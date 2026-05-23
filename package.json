@@ -1,11 +1,12 @@
 {
   "name": "cicd-demo",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "analyze": "tsc -b && vite build --mode analyze",
     "lint": "eslint .",
     "lint:changed": "node scripts/lint-changed.cjs",
     "preview": "vite preview",
@@ -14,8 +15,10 @@
     "git:push": "yarn lint:changed && git add -A && cz && git pull && git push"
   },
   "dependencies": {
+    "antd": "^6.4.3",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
     "@commitlint/cli": "19",
@@ -32,9 +35,12 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "husky": "^9.1.7",
+    "less": "^4.6.4",
+    "rollup-plugin-visualizer": "6.0.11",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vite-plugin-svgr": "^5.2.0"
   },
   "config": {
     "commitizen": {
@@ -43,5 +49,9 @@
     "cz-customizable": {
       "config": "cz-config.cjs"
     }
+  },
+  "engines": {
+    "node": "20.19.3",
+    "yarn": "1.22.22"
   }
 }
