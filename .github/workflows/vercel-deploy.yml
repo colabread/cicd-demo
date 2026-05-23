@@ -53,27 +53,24 @@ jobs:
       - name: Build
         run: yarn build
 
-      # Test deployment is intentionally disabled until Vercel secrets are configured.
-      # To enable deployment to test-dingnan.vercel.app later, uncomment this block.
-      #
-      # - name: Pull Vercel environment (test)
-      #   if: github.event_name == 'push' && github.ref_name == 'test'
-      #   run: npx vercel@latest pull --yes --environment=preview --token="$VERCEL_TOKEN"
-      #
-      # - name: Build with Vercel (test)
-      #   if: github.event_name == 'push' && github.ref_name == 'test'
-      #   run: npx vercel@latest build --token="$VERCEL_TOKEN"
-      #
-      # - name: Deploy to Vercel (test)
-      #   if: github.event_name == 'push' && github.ref_name == 'test'
-      #   id: deploy-test
-      #   run: |
-      #     url=$(npx vercel@latest deploy --prebuilt --token="$VERCEL_TOKEN")
-      #     echo "url=$url" >> "$GITHUB_OUTPUT"
-      #
-      # - name: Alias test deployment
-      #   if: github.event_name == 'push' && github.ref_name == 'test'
-      #   run: npx vercel@latest alias set "${{ steps.deploy-test.outputs.url }}" test-dingnan.vercel.app --token="$VERCEL_TOKEN"
+      - name: Pull Vercel environment (test)
+        if: github.event_name == 'push' && github.ref_name == 'test'
+        run: npx vercel@latest pull --yes --environment=preview --token="$VERCEL_TOKEN"
+
+      - name: Build with Vercel (test)
+        if: github.event_name == 'push' && github.ref_name == 'test'
+        run: npx vercel@latest build --token="$VERCEL_TOKEN"
+
+      - name: Deploy to Vercel (test)
+        if: github.event_name == 'push' && github.ref_name == 'test'
+        id: deploy-test
+        run: |
+          url=$(npx vercel@latest deploy --prebuilt --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Alias test deployment
+        if: github.event_name == 'push' && github.ref_name == 'test'
+        run: npx vercel@latest alias set "${{ steps.deploy-test.outputs.url }}" test-dingnan.vercel.app --token="$VERCEL_TOKEN"
 
       - name: Pull Vercel environment
         if: github.event_name != 'push'
