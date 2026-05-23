@@ -5,12 +5,15 @@ import heroImg from './assets/hero.png'
 import packageJson from '../package.json'
 import './App.css'
 
+const POWER_TIER_MIN_COUNT = 10
+const POWER_TIER_INTERVAL = 3
+
 function App() {
   const [count, setCount] = useState(0)
-  const visibleTier =
-    count > 10 && packageJson.version.startsWith('1.') && count % 3 === 0
-      ? 'power'
-      : 'new'
+  const isVersionOne = packageJson.version.startsWith('1.')
+  const hasPowerTierCount =
+    count > POWER_TIER_MIN_COUNT && count % POWER_TIER_INTERVAL === 0
+  const visibleTier = isVersionOne && hasPowerTierCount ? 'power' : 'new'
 
   return (
     <>
@@ -34,7 +37,7 @@ function App() {
         >
           Count is {count}
         </button>
-        <p className="blue-card">Current tier is {visibleTier}</p>
+        <p className="tier-status">Current tier is {visibleTier}</p>
         <section className="profile" aria-labelledby="profile-title">
           <div className="profile-header">
             <img className="profile-avatar" src="/zjz.png" alt="dingnan avatar" />
