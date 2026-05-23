@@ -17,10 +17,6 @@ module.exports = {
       name: "💡 perf: 改进优化相关,比如提升性能、体验",
     },
     {
-      value: "wip",
-      name: "🚧 wip: 正在进行中的工作",
-    },
-    {
       value: "test",
       name: "🚨 test: 测试，实验",
     },
@@ -65,7 +61,7 @@ module.exports = {
   messages: {
     type: "选择一种你的提交类型( 必选 ❗):",
     scope:
-      "请选择修改范围(支持自定义)\n 💬 业务项目中依据菜单或者功能模块划分(可选)：\n",
+      "请选择修改范围\n 💬 业务项目中依据菜单或者功能模块划分(必选 ❗)：\n",
     subject: "请简要描述提交( 必填 ❗)：\n",
     body: '请输入详细描述使用," | "换行(可选)：\n',
     breaking: "列出任何BREAKING CHANGES(可选)：\n",
