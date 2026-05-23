@@ -7,10 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "lint:changed": "node scripts/lint-changed.cjs",
     "preview": "vite preview",
     "prepare": "husky",
     "commitlint": "commitlint --edit",
-    "git:push": "git add -A && cz && git pull && git push"
+    "git:push": "yarn lint:changed && git add -A && cz && git pull && git push"
   },
   "dependencies": {
     "react": "^19.2.6",
