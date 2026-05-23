@@ -1,15 +1,13 @@
-import {
-  Breadcrumb,
-  Button,
-  ConfigProvider,
-  Flex,
-  Layout,
-  Menu,
-  Skeleton,
-  Tag,
-  Typography,
-} from 'antd'
-import type { MenuProps } from 'antd'
+import Breadcrumb from 'antd/es/breadcrumb'
+import Button from 'antd/es/button'
+import ConfigProvider from 'antd/es/config-provider'
+import Flex from 'antd/es/flex'
+import Layout from 'antd/es/layout'
+import Menu from 'antd/es/menu'
+import type { MenuProps } from 'antd/es/menu'
+import Skeleton from 'antd/es/skeleton'
+import Tag from 'antd/es/tag'
+import Typography from 'antd/es/typography'
 import { Suspense, createElement } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import {

@@ -1,5 +1,10 @@
-import { Button, Card, Space, Table, Tag, Typography } from 'antd'
-import type { TableProps } from 'antd'
+import Button from 'antd/es/button'
+import Card from 'antd/es/card'
+import Space from 'antd/es/space'
+import Table from 'antd/es/table'
+import type { TableProps } from 'antd/es/table'
+import Tag from 'antd/es/tag'
+import Typography from 'antd/es/typography'
 
 const { Paragraph, Text, Title } = Typography
 
