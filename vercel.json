@@ -1,4 +1,7 @@
 {
+  "git": {
+    "deploymentEnabled": false
+  },
   "buildCommand": "yarn build",
   "outputDirectory": "dist",
   "installCommand": "yarn install --frozen-lockfile"
