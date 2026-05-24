@@ -14,6 +14,7 @@ const SRC_PATH = fileURLToPath(new URL('./src', import.meta.url))
 
 const REACT_PACKAGES = new Set(['react', 'react-dom', 'react-router-dom', 'react-router'])
 const ANTD_PACKAGE_PREFIXES = ['antd', '@ant-design/', 'rc-', '@rc-component/']
+const IDLE_PRELOAD_PACKAGES = new Map([['lodash', 'lodash-vendor']])
 
 function getPackageName(id: string) {
   const normalizedId = id.replace(/\\/g, '/')
@@ -79,6 +80,12 @@ export default defineConfig(({ mode }) => ({
 
           if (ANTD_PACKAGE_PREFIXES.some((packagePrefix) => packageName.startsWith(packagePrefix))) {
             return 'antd-vendor'
+          }
+
+          const idlePreloadChunkName = IDLE_PRELOAD_PACKAGES.get(packageName)
+
+          if (idlePreloadChunkName) {
+            return idlePreloadChunkName
           }
 
           return 'vendor'

@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react"
+import { preloadPaperManagementVendorWhenIdle } from "@/performance/preloads"
 import styles from "./index.module.less"
 
 const BigComponent = lazy(() => import("@/components/BigComponent"))
@@ -6,6 +7,8 @@ const BigComponent = lazy(() => import("@/components/BigComponent"))
 export default function QuestionBank() {
   const bigComponentSectionRef = useRef<HTMLElement | null>(null)
   const [visible, setVisible] = useState(false)
+
+  useEffect(() => preloadPaperManagementVendorWhenIdle(), [])
 
   useEffect(() => {
     if (visible) return
