@@ -1,4 +1,4 @@
-import { startCase } from 'lodash'
+import startCase from 'lodash/startCase'
 
 import { ModulePlaceholder } from './module-placeholder'
 import { paperManagementMeta } from './meta'
