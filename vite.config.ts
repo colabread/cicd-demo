@@ -10,6 +10,7 @@ const ANTD_ICON_CONTEXT_PATH = fileURLToPath(
 const ANTD_ICON_STUB_PATH = fileURLToPath(
   new URL('./src/assets/icons/antd-icon-placeholder.tsx', import.meta.url),
 )
+const SRC_PATH = fileURLToPath(new URL('./src', import.meta.url))
 
 const REACT_PACKAGES = new Set(['react', 'react-dom', 'react-router-dom', 'react-router'])
 const ANTD_PACKAGE_PREFIXES = ['antd', '@ant-design/', 'rc-', '@rc-component/']
@@ -43,6 +44,10 @@ export default defineConfig(({ mode }) => ({
       {
         find: /^@ant-design\/icons\/.+$/,
         replacement: ANTD_ICON_STUB_PATH,
+      },
+      {
+        find: '@',
+        replacement: SRC_PATH,
       },
     ],
   },
